@@ -3,6 +3,7 @@
 #include <bitset>
 #include <queue>
 #include <unordered_map>
+#include <memory>
 
 #ifdef __GNUC__
 #define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
@@ -144,5 +145,56 @@ private:
 
 class component_manager
 {
+public:
     
+    template<typename T>
+    void register_component()
+    {
+        const char* component_name = typeid(T);
+        component_ids[component_name] = get_new_id();
+        component_arrays[component_name] = make_shared<component_array<T>>();
+    }
+
+    template<typename T>
+    component_id get_component_id()
+    {
+        return component_ids[typeid(T)];
+    }
+
+    template<typename T>
+    void add_instance(entity* _entity, T component)
+    {
+        get_component_array<T>()->insert_new_component(_entity, component);
+    }
+
+    template<typename T>
+    void remove_instance(entity* _entity)
+    {
+        
+    }
+
+    template<typename T>
+    T& get_instance(entity* _entity)
+    {
+        
+    }
+
+    template<typename T>
+    void entity_destroyed(entity* _entity)
+    {
+        
+    }
+
+private:
+    component_id get_new_id() { return next_id++; }
+    unordered_map<const char*, component_id> component_ids;
+    unordered_map<const char*, shared_ptr<component_array_base>> component_arrays;
+    component_id next_id = 0;
+
+    template<typename T>
+    shared_ptr<component_array<T>> get_component_array()
+    {
+        const char* component_name = typeid(T);
+        return static_pointer_cast<component_array<T>>(component_arrays[component_name]);
+    }
 };
