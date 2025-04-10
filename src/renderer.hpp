@@ -16,4 +16,4 @@ public:
     void render_next_frame();
 private:
     SDL_Renderer* _renderer = nullptr;
-}inline renderer;
+};

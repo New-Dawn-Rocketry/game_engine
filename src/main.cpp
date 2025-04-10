@@ -5,6 +5,7 @@
 using std::queue;
 
 SDL_Semaphore* frame_update_ready = nullptr;
+renderer renderer_c;
 
 Uint32 frame_update_trigger(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
@@ -19,13 +20,13 @@ int main ()
 
     SDL_Window* window;
     SDL_Renderer* render;
-    SDL_CreateWindowAndRenderer("Lost Odyssey esc", 800, 480, SDL_WINDOW_ALWAYS_ON_TOP, &window, &render);
-    renderer = render;
+    SDL_CreateWindowAndRenderer("Lost ", 800, 480, SDL_WINDOW_ALWAYS_ON_TOP, &window, &render);
+    renderer_c = render;
 
     game.init();
 
     Uint32 period_ms = SDL_roundf((1.0 / 60.0) * 1000.0);
-    SDL_Log("Period in ms is %u\n", period_ms);
+    // SDL_Log("Period in ms is %u\n", period_ms);
 
     SDL_AddTimer(period_ms, frame_update_trigger, nullptr);
     
@@ -38,7 +39,7 @@ int main ()
         {
             itr->update();
         }
-        renderer.render_next_frame();
+        renderer_c.render_next_frame();
         SDL_PollEvent(&event);
     }while(event.type != SDL_EVENT_QUIT);
     SDL_DestroyWindow(window);
