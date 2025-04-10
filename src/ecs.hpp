@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <array>
 #include <bitset>
+#include <set>
 #include <queue>
 #include <unordered_map>
 #include <memory>
@@ -170,19 +171,22 @@ public:
     template<typename T>
     void remove_instance(entity* _entity)
     {
-        
+        get_component_array<T>()->remove_component(_entity);
     }
 
     template<typename T>
     T& get_instance(entity* _entity)
     {
-        
+        return get_component_array<T>()->get_component(_entity);
     }
 
-    template<typename T>
     void entity_destroyed(entity* _entity)
     {
-        
+        for (auto const& pair : component_arrays)
+        {
+            auto const& component = pair.second;
+            component->entity_destroyed(_entity);
+        }
     }
 
 private:
@@ -198,3 +202,14 @@ private:
         return static_pointer_cast<component_array<T>>(component_arrays[component_name]);
     }
 };
+
+class system_base
+{
+public:
+    set<entity> entities;
+};
+
+class system_manager
+{
+    
+}
