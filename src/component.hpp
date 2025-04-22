@@ -1,96 +1,4 @@
-#include <cstdint>
-#include <array>
-#include <bitset>
-#include <set>
-#include <queue>
-#include <unordered_map>
-#include <memory>
-
-#ifdef __GNUC__
-#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
-#endif
-
-#ifdef _MSC_VER
-#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
-#endif
-
-using entity_id = std::uint32_t;
-
-const entity_id c_max_entities = UINT32_MAX - 1;
-
-using component_id = std::uint8_t;
-
-const component_id c_max_types = UINT8_MAX;
-
-using entity_signature = std::bitset<c_max_types>;
-
-class entity_manager;
-template <typename T> class component_array;
-
-inline entity_manager _entity_manager;
-
-/// TODO: Continue to add methods so that the entity can have more functionality
-/// TODO: Error check just in case we have more than um.. 2^32 - 1 objects (-1 since the value -1 will represent uninitialized)
-struct entity
-{
-    entity_id id = -1;
-    /*
-    /// is it worth it? we shall see...
-    struct proxy
-    {
-        const entity* parent = nullptr;
-        proxy(entity* parent) : parent(parent) {}
-        operator const entity_signature() { return _entity_manager.get_entity_signature((entity*)parent);}
-    }signature = proxy(this);   
-    /*/  
-    const entity_signature& signature() { return _entity_manager.get_entity_signature(this); }
-    //*/
-
-    void create() { _entity_manager.create_entity(this); }
-    void destroy() { _entity_manager.destroy_entity(this);}
-};
-
-
-
-/// We have seperate arrays for the entity and each component type
-
-class entity_manager 
-{
-public:
-entity_manager()
-{
-    /// I will keep this the same for now but I eventually want to accomplish this in a different way
-    for (entity_id id = 0; id < c_max_entities; id++)
-    {
-        unused_ids.push(id);
-    }
-}
-void create_entity(entity* _entity)
-{
-    _entity->id = unused_ids.front();
-    unused_ids.pop();
-}
-void destroy_entity(entity* _entity)
-{
-    unused_ids.push(_entity->id);
-    signatures[_entity->id].reset();
-}
-void add_component_id(entity* _entity, component_id _component_id)
-{
-    signatures[_entity->id].set(_component_id);
-}
-void remove_component_id(entity* _entity, component_id _component_id)
-{
-    signatures[_entity->id].reset(_component_id);
-}
-const entity_signature get_entity_signature(entity* _entity)
-{
-    return signatures[_entity->id];
-}
-private:
-    std::queue<entity_id>unused_ids;
-    std::array<entity_signature, c_max_entities> signatures;
-};
+#include "ecs_globals.hpp"
 
 class component_array_base
 {
@@ -191,25 +99,14 @@ public:
 
 private:
     component_id get_new_id() { return next_id++; }
-    unordered_map<const char*, component_id> component_ids;
-    unordered_map<const char*, shared_ptr<component_array_base>> component_arrays;
+    std::unordered_map<const char*, component_id> component_ids;
+    std::unordered_map<const char*, std::shared_ptr<component_array_base>> component_arrays;
     component_id next_id = 0;
 
     template<typename T>
-    shared_ptr<component_array<T>> get_component_array()
+    std::shared_ptr<component_array<T>> get_component_array()
     {
         const char* component_name = typeid(T);
         return static_pointer_cast<component_array<T>>(component_arrays[component_name]);
     }
 };
-
-class system_base
-{
-public:
-    set<entity> entities;
-};
-
-class system_manager
-{
-    
-}
